@@ -1,6 +1,7 @@
 # User-specified ignores
 _files/
 .claude/
+.agents/
 
 # Python
 __pycache__/
