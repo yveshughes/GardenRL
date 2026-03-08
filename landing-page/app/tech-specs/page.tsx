@@ -10,32 +10,31 @@ export default function TechSpecs() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
-      {/* Header */}
-      <header className="border-b border-emerald-900/30 bg-slate-950/50 backdrop-blur">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="text-emerald-400 hover:text-emerald-300 transition-colors">
-            ← Back to GardenRL
+      <header className="border-b border-emerald-900/30 bg-slate-950/80 backdrop-blur sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
+          <Link href="/" className="text-emerald-400 hover:text-emerald-300 transition-colors text-sm">
+            Back to GardenRL
           </Link>
-          <h1 className="text-2xl font-bold text-emerald-400">Technical Specifications</h1>
+          <h1 className="text-lg font-bold text-white">Tech Specs</h1>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-12">
+      <main className="max-w-4xl mx-auto px-6 py-10">
         {/* Tabs */}
-        <div className="flex gap-2 mb-8 border-b border-slate-700">
+        <div className="flex gap-1 mb-10 border-b border-slate-700 overflow-x-auto">
           {[
-            { id: 'overview' as Tab, label: 'Overview' },
-            { id: 'northflank' as Tab, label: 'Northflank GPU' },
-            { id: 'wandb' as Tab, label: 'Weights & Biases' },
-            { id: 'training' as Tab, label: 'Training Setup' },
+            { id: 'overview' as Tab, label: 'The Big Picture' },
+            { id: 'northflank' as Tab, label: 'GPU Cloud' },
+            { id: 'wandb' as Tab, label: 'Tracking Results' },
+            { id: 'training' as Tab, label: 'Running It' },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-3 font-medium transition-all ${
+              className={`px-5 py-3 text-sm font-medium whitespace-nowrap transition-all ${
                 activeTab === tab.id
                   ? 'text-emerald-400 border-b-2 border-emerald-400'
-                  : 'text-slate-400 hover:text-slate-300'
+                  : 'text-slate-500 hover:text-slate-300'
               }`}
             >
               {tab.label}
@@ -43,116 +42,141 @@ export default function TechSpecs() {
           ))}
         </div>
 
-        {/* Content */}
-        <div className="bg-slate-900/50 rounded-lg p-8 border border-slate-800">
-          {activeTab === 'overview' && <OverviewTab />}
-          {activeTab === 'northflank' && <NorthflankTab />}
-          {activeTab === 'wandb' && <WandBTab />}
-          {activeTab === 'training' && <TrainingTab />}
-        </div>
+        {activeTab === 'overview' && <OverviewTab />}
+        {activeTab === 'northflank' && <NorthflankTab />}
+        {activeTab === 'wandb' && <WandBTab />}
+        {activeTab === 'training' && <TrainingTab />}
       </main>
     </div>
   );
 }
 
+/* ───────────────────────────── OVERVIEW ───────────────────────────── */
+
 function OverviewTab() {
   return (
-    <div className="space-y-6 text-slate-300">
-      <h2 className="text-3xl font-bold text-emerald-400">Project Overview</h2>
-
-      <div className="space-y-4">
-        <Section title="What is GardenRL?">
-          <p>GardenRL is an AI training environment that teaches language models to grow virtual plants through trial and error.</p>
-          <ul className="list-disc list-inside mt-2 space-y-1 ml-4">
-            <li>390,000 real plant images used to build scientifically-grounded simulation</li>
-            <li>Agent reads text observations (pH, EC, leaf color) - no vision model needed</li>
-            <li>Fast, deterministic Python simulation for any RL framework</li>
-          </ul>
-        </Section>
-
-        <Section title="Tech Stack">
-          <div className="grid md:grid-cols-2 gap-4 mt-4">
-            <InfoCard
-              title="Compute"
-              items={['Northflank GPU (H100)', 'Meta - OpenEnv Region', '16 vCPU, 192GB RAM']}
-            />
-            <InfoCard
-              title="Observability"
-              items={['Weights & Biases Models', 'Live reward curve tracking', 'Public shareable results']}
-            />
-            <InfoCard
-              title="Training"
-              items={['Python RL environment', 'Text-based observations', 'Reward: harvest weight']}
-            />
-            <InfoCard
-              title="Framework"
-              items={['PyTorch', 'Unsloth (LLM optimization)', 'TRL (training library)']}
-            />
-          </div>
-        </Section>
-
-        <Section title="Why This Matters">
-          <p>Traditional RL environments use simple numbers. GardenRL uses <strong>natural language observations</strong> that force models to reason like a real gardener:</p>
-          <div className="bg-slate-950/50 p-4 rounded-lg mt-3 font-mono text-sm">
-            <div className="text-emerald-400">Observation:</div>
-            <div className="ml-4 mt-2">
-              ph: 7.2<br/>
-              leaf_color: "brown_tips"<br/>
-              growth_stage: "vegetative"<br/>
-              warnings: ["nutrient lockout risk"]
-            </div>
-          </div>
-        </Section>
+    <div className="space-y-10">
+      <div>
+        <h2 className="text-3xl font-bold text-white mb-2">What are we building?</h2>
+        <p className="text-lg text-slate-400">
+          A virtual garden where AI learns to grow plants by trial and error &mdash; like a video game for machine learning.
+        </p>
       </div>
+
+      <Callout>
+        We studied 390,000 real photos of plants grown in water (hydroponics) to understand how
+        plants actually grow. Then we turned that knowledge into a simulation. The AI never looks
+        at photos &mdash; it reads sensor data like a farmer reading gauges.
+      </Callout>
+
+      <Section title="How it works, in one sentence">
+        <p className="text-lg">
+          The AI gets readings (pH, nutrients, leaf color), decides what to do (add water, adjust nutrients),
+          and gets scored on how much the plant grew. Over hundreds of rounds, it gets better.
+        </p>
+      </Section>
+
+      <Section title="The tools we use">
+        <div className="grid sm:grid-cols-3 gap-4 mt-4">
+          <ToolCard
+            name="Northflank"
+            role="The computer"
+            description="Gives us a powerful GPU in the cloud so training runs fast instead of taking days on a laptop."
+          />
+          <ToolCard
+            name="Weights & Biases"
+            role="The scoreboard"
+            description="Tracks every training run and draws charts showing the AI improving over time. Proof that it's learning."
+          />
+          <ToolCard
+            name="PyTorch + Unsloth"
+            role="The engine"
+            description="The actual machine learning code that makes the AI think, learn, and get smarter each round."
+          />
+        </div>
+      </Section>
+
+      <Section title="What the AI actually sees">
+        <p className="mb-3">Not images. It reads text, like a dashboard of sensors:</p>
+        <div className="bg-slate-950 border border-slate-700 rounded-lg p-5 font-mono text-sm leading-relaxed">
+          <Line label="pH" value="7.2" comment="slightly alkaline" />
+          <Line label="leaf_color" value='"brown_tips"' comment="early nutrient issue" />
+          <Line label="growth_stage" value='"vegetative"' comment="still growing leaves" />
+          <Line label="warnings" value='["nutrient lockout risk"]' comment="needs attention" />
+        </div>
+        <p className="text-sm text-slate-500 mt-3">
+          This is actually a strength &mdash; any language model can read text. No special vision model needed.
+          Faster training, simpler code, same scientific accuracy.
+        </p>
+      </Section>
     </div>
   );
 }
 
+/* ───────────────────────────── NORTHFLANK ───────────────────────────── */
+
 function NorthflankTab() {
   return (
-    <div className="space-y-6 text-slate-300">
-      <h2 className="text-3xl font-bold text-emerald-400">Northflank GPU Setup</h2>
+    <div className="space-y-10">
+      <div>
+        <h2 className="text-3xl font-bold text-white mb-2">GPU Cloud (Northflank)</h2>
+        <p className="text-lg text-slate-400">
+          Training AI on a laptop would take forever. We rented a powerful GPU in the cloud to speed things up.
+        </p>
+      </div>
 
-      <Section title="Why Northflank?">
-        <p>Northflank provides instant access to H100 GPUs in the Meta - OpenEnv region, perfect for training large language models.</p>
+      <Section title="What is Northflank?">
+        <p>
+          Think of it like renting a supercomputer by the hour. Northflank is a platform that lets you
+          spin up a powerful machine in the cloud, run your code on it, and shut it down when you're done.
+          You only pay for the time you use.
+        </p>
       </Section>
 
-      <Section title="Service Configuration">
-        <div className="bg-slate-950/50 p-6 rounded-lg space-y-3">
-          <ConfigRow label="Service Name" value="gardenrl-gpu-training" />
-          <ConfigRow label="Region" value="Meta - OpenEnv (GPU region)" />
-          <ConfigRow label="GPU" value="NVIDIA H100 (80GB VRAM) × 1" />
-          <ConfigRow label="CPU" value="16 dedicated vCPUs" />
-          <ConfigRow label="Memory" value="192 GB RAM" />
-          <ConfigRow label="Storage" value="60 GB ephemeral + 64 MB shared memory" />
-          <ConfigRow label="Docker Image" value="ubuntu:22.04" />
+      <Section title="Why do we need a GPU?">
+        <p>
+          A GPU (Graphics Processing Unit) was originally designed for video games, but it turns out to be
+          amazing at the math that AI needs. Training on a GPU is <strong>10-100x faster</strong> than
+          on a regular computer.
+        </p>
+        <p className="mt-3">
+          We're using an <strong>NVIDIA H100</strong> &mdash; one of the most powerful GPUs available today,
+          with 80GB of dedicated memory for AI workloads.
+        </p>
+      </Section>
+
+      <Section title="What we set up">
+        <div className="bg-slate-950 border border-slate-700 rounded-lg divide-y divide-slate-800">
+          <ConfigRow label="Service name" value="gardenrl-gpu-training" />
+          <ConfigRow label="Cloud region" value="Meta - OpenEnv" />
+          <ConfigRow label="GPU" value="NVIDIA H100 (80 GB memory)" />
+          <ConfigRow label="CPU" value="16 cores" />
+          <ConfigRow label="RAM" value="192 GB" />
+          <ConfigRow label="Operating system" value="Ubuntu 22.04 (Linux)" />
+          <ConfigRow label="Cost" value="$2.74 / hour" />
         </div>
       </Section>
 
-      <Section title="Quick Start Commands">
+      <Section title="How to connect to it">
+        <p className="mb-4">From your terminal, you can run commands on the cloud machine:</p>
         <CodeBlock
-          title="Install Northflank CLI"
-          code="npm install -g @northflank/cli"
+          label="Run a command on the GPU machine"
+          code='npx @northflank/cli exec service --serviceId gardenrl-gpu-training --cmd "your command here"'
         />
         <CodeBlock
-          title="Login"
-          code="npx @northflank/cli login"
-        />
-        <CodeBlock
-          title="SSH into service"
+          label="Open an SSH tunnel for direct access"
           code="npx @northflank/cli ssh service --serviceId gardenrl-gpu-training"
         />
       </Section>
 
-      <Section title="Setup Status">
+      <Section title="Current status">
         <StatusList
           items={[
-            { done: true, text: 'Northflank CLI installed and authenticated' },
-            { done: true, text: 'Project context set to hackathon' },
-            { done: true, text: 'GPU service deployed and running' },
-            { done: false, text: 'Python dependencies installed' },
-            { done: false, text: 'GitHub repo cloned' },
-            { done: false, text: 'Training script running' },
+            { done: true, text: 'Northflank account connected' },
+            { done: true, text: 'GPU service created and running' },
+            { done: true, text: 'Python, PyTorch, and ML libraries installed' },
+            { done: true, text: 'GardenRL code cloned from GitHub' },
+            { done: true, text: 'GPU detected and working (nvidia-smi)' },
           ]}
         />
       </Section>
@@ -160,51 +184,63 @@ function NorthflankTab() {
   );
 }
 
+/* ───────────────────────── WEIGHTS & BIASES ───────────────────────── */
+
 function WandBTab() {
   return (
-    <div className="space-y-6 text-slate-300">
-      <h2 className="text-3xl font-bold text-emerald-400">Weights & Biases Integration</h2>
+    <div className="space-y-10">
+      <div>
+        <h2 className="text-3xl font-bold text-white mb-2">Tracking Results (Weights & Biases)</h2>
+        <p className="text-lg text-slate-400">
+          If we can't prove the AI is learning, it doesn't count. W&B gives us live charts that show improvement.
+        </p>
+      </div>
 
-      <Section title="Why W&B?">
-        <p>Weights & Biases automatically tracks training runs and plots the reward curve - which is <strong>20% of the judging score</strong>. It makes results beautiful and shareable with one line of code.</p>
+      <Section title="What is Weights & Biases?">
+        <p>
+          It's a dashboard that watches your AI while it trains. Every time the AI finishes a round of
+          growing a plant, W&B records the score and plots it on a chart. Over time, you can see the line
+          going up &mdash; that's the AI getting smarter.
+        </p>
       </Section>
 
-      <Section title="Which W&B Product?">
-        <div className="space-y-3">
-          <ProductCard
-            title="Models"
-            status="✅ Using This"
-            description="Tracks RL training runs, generates reward curves, logs harvest weight improving over episodes"
+      <Section title="Why does this matter?">
+        <Callout>
+          The reward curve (a chart showing the AI's score improving over time) is worth
+          <strong> 20% of the hackathon judging score</strong>. W&B generates this automatically
+          and gives us a public link we can share with judges.
+        </Callout>
+      </Section>
+
+      <Section title="What we're tracking">
+        <div className="grid sm:grid-cols-2 gap-4">
+          <MetricCard
+            name="Reward (harvest weight)"
+            description="How much the virtual plant produced. Higher = the AI made better decisions."
           />
-          <ProductCard
-            title="Weave"
-            status="⏳ Later if time permits"
-            description="Shows step-by-step reasoning, demonstrates Mercor bounty angle"
+          <MetricCard
+            name="Episode number"
+            description="Which round of training we're on. The AI plays hundreds of these."
           />
-          <ProductCard
-            title="Inference"
-            status="❌ Not needed"
-            description="For serving LLMs to users - not applicable to training-only workflow"
+          <MetricCard
+            name="pH and EC levels"
+            description="The water chemistry over time. Shows if the AI learned to keep conditions stable."
+          />
+          <MetricCard
+            name="Days survived"
+            description="How long the plant lasted. Early on, the AI kills plants fast. Later, they thrive."
           />
         </div>
       </Section>
 
-      <Section title="Integration Code">
+      <Section title="The code is simple">
+        <p className="mb-4">Just 5 lines added to the training script:</p>
         <CodeBlock
-          title="Install W&B"
-          code="pip install wandb"
-        />
-        <CodeBlock
-          title="Login"
-          code="wandb login"
-        />
-        <CodeBlock
-          title="Add to training script"
           code={`import wandb
 
 wandb.init(project="gardenrl", name="run-1")
 
-# Inside training loop, after each episode:
+# After each training episode:
 wandb.log({
     "episode": episode_num,
     "reward": harvest_weight,
@@ -217,89 +253,37 @@ wandb.finish()`}
         />
       </Section>
 
-      <Section title="What Judges Will See">
-        <p>Live public URL like <code className="text-emerald-400">wandb.ai/yves/gardenrl</code> showing:</p>
-        <ul className="list-disc list-inside mt-2 space-y-1 ml-4">
-          <li>Reward curve climbing over episodes</li>
-          <li>pH/EC drift over time</li>
-          <li>Agent improving harvest weight</li>
-        </ul>
-        <p className="mt-3 text-emerald-400">This URL goes in your submission and YouTube video for undeniable proof of improvement.</p>
-      </Section>
-
-      <Section title="Important Clarification">
-        <div className="bg-amber-950/30 border border-amber-700/50 p-4 rounded-lg">
-          <p className="font-medium text-amber-400">No Vision Model Needed</p>
-          <p className="mt-2">The 390K plant images built the simulation physics - the agent never sees photos at runtime. It reads text observations like <code>leaf_color: "brown_tips"</code>, not images.</p>
-          <p className="mt-2">This is a <strong>strength</strong>: faster training, simpler pipeline, any LLM can read text.</p>
+      <Section title='About the "vision model" question'>
+        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-5 space-y-3">
+          <p>
+            Some people assume we need a vision model because we used 390,000 plant images.
+            We don't. Here's the difference:
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4 mt-2">
+            <div className="bg-slate-950/50 p-4 rounded-lg">
+              <p className="font-medium text-slate-300 mb-2">What people assume</p>
+              <p className="text-sm text-slate-500">
+                AI looks at photos of plants to decide what to do. Needs a vision model to "see" leaves.
+              </p>
+            </div>
+            <div className="bg-emerald-950/30 border border-emerald-800/50 p-4 rounded-lg">
+              <p className="font-medium text-emerald-400 mb-2">What actually happens</p>
+              <p className="text-sm text-slate-400">
+                We used photos to build the science behind the simulation. At runtime, the AI reads
+                text like "leaf_color: brown_tips" &mdash; no photos involved.
+              </p>
+            </div>
+          </div>
         </div>
       </Section>
-    </div>
-  );
-}
 
-function TrainingTab() {
-  return (
-    <div className="space-y-6 text-slate-300">
-      <h2 className="text-3xl font-bold text-emerald-400">Training Setup</h2>
-
-      <Section title="Environment Setup (On Northflank GPU)">
-        <CodeBlock
-          title="Update system"
-          code="apt-get update && apt-get install -y python3 python3-pip git"
-        />
-        <CodeBlock
-          title="Install Python dependencies"
-          code="pip install torch unsloth trl wandb"
-        />
-        <CodeBlock
-          title="Clone repository"
-          code="git clone https://github.com/YOUR_USERNAME/GardenRL.git
-cd GardenRL"
-        />
-      </Section>
-
-      <Section title="Training Script Structure">
-        <CodeBlock
-          code={`# 1. Initialize W&B
-import wandb
-wandb.init(project="gardenrl", name="h100-run-1")
-
-# 2. Load environment
-from GardenRL_environment import GardenEnv
-env = GardenEnv()
-
-# 3. Training loop
-for episode in range(num_episodes):
-    obs = env.reset()
-    total_reward = 0
-
-    while not done:
-        action = agent.act(obs)
-        obs, reward, done, info = env.step(action)
-        total_reward += reward
-
-    # 4. Log to W&B
-    wandb.log({
-        "episode": episode,
-        "reward": total_reward,
-        "harvest_weight": info["harvest_weight"]
-    })
-
-wandb.finish()`}
-        />
-      </Section>
-
-      <Section title="Next Steps">
+      <Section title="Current status">
         <StatusList
           items={[
-            { done: false, text: 'SSH into Northflank service' },
-            { done: false, text: 'Install system packages (python3, git)' },
-            { done: false, text: 'Install Python libraries (torch, unsloth, trl, wandb)' },
-            { done: false, text: 'Clone GardenRL repository' },
-            { done: false, text: 'Login to W&B and grab API key' },
-            { done: false, text: 'Run training script' },
-            { done: false, text: 'Monitor progress on W&B dashboard' },
+            { done: true, text: 'W&B library installed on GPU machine' },
+            { done: true, text: 'API key connected and authenticated' },
+            { done: true, text: 'Test run logged successfully' },
+            { done: false, text: 'Full training run with live tracking' },
           ]}
         />
       </Section>
@@ -307,46 +291,199 @@ wandb.finish()`}
   );
 }
 
-// Helper Components
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+/* ───────────────────────── TRAINING SETUP ───────────────────────── */
+
+function TrainingTab() {
   return (
-    <div>
-      <h3 className="text-xl font-semibold text-emerald-300 mb-3">{title}</h3>
-      <div className="text-slate-300">{children}</div>
+    <div className="space-y-10">
+      <div>
+        <h2 className="text-3xl font-bold text-white mb-2">Running the Training</h2>
+        <p className="text-lg text-slate-400">
+          Everything is installed. Here's how it all fits together when we hit "go."
+        </p>
+      </div>
+
+      <Section title="The pipeline, step by step">
+        <ol className="space-y-4 mt-4">
+          <Step number={1} title="We connect to our cloud GPU">
+            From our laptop, we run a command that opens a connection to the Northflank
+            machine with the H100 GPU.
+          </Step>
+          <Step number={2} title="The training script starts">
+            Python loads our GardenRL environment (the virtual garden) and sets up the AI model
+            using PyTorch and Unsloth.
+          </Step>
+          <Step number={3} title="The AI plays hundreds of rounds">
+            Each round: the AI reads the plant's status, decides what to do (adjust pH, add
+            nutrients, etc.), and gets scored on how well the plant grew.
+          </Step>
+          <Step number={4} title="Every round is logged to W&B">
+            After each round, the score and plant data get sent to Weights & Biases, which
+            updates the live dashboard in real time.
+          </Step>
+          <Step number={5} title="We watch the reward curve go up">
+            On the W&B dashboard, we can see a chart of the AI's score over time. If it's
+            going up, the AI is learning. That chart is our proof.
+          </Step>
+        </ol>
+      </Section>
+
+      <Section title="What's installed on the GPU machine">
+        <div className="bg-slate-950 border border-slate-700 rounded-lg divide-y divide-slate-800">
+          <PackageRow name="Python 3" purpose="The programming language everything runs in" />
+          <PackageRow name="PyTorch" purpose="The core AI/ML framework (like the engine of a car)" />
+          <PackageRow name="Unsloth" purpose="Makes LLM training 2-5x faster and use less memory" />
+          <PackageRow name="TRL" purpose="Hugging Face library for training LLMs with rewards" />
+          <PackageRow name="W&B" purpose="Sends training data to our live dashboard" />
+          <PackageRow name="Git" purpose="Pulls our latest code from GitHub" />
+        </div>
+      </Section>
+
+      <Section title="Commands to run training">
+        <CodeBlock
+          label="Step 1: Connect to GPU machine"
+          code='npx @northflank/cli exec service --serviceId gardenrl-gpu-training --cmd "bash"'
+        />
+        <CodeBlock
+          label="Step 2: Go to the project folder"
+          code="cd GardenRL"
+        />
+        <CodeBlock
+          label="Step 3: Pull latest code"
+          code="git pull origin main"
+        />
+        <CodeBlock
+          label="Step 4: Run training"
+          code="python3 train.py"
+        />
+      </Section>
+
+      <Section title="Overall progress">
+        <StatusList
+          items={[
+            { done: true, text: 'GPU machine set up and running in the cloud' },
+            { done: true, text: 'All software installed (Python, PyTorch, etc.)' },
+            { done: true, text: 'GardenRL code deployed to GPU machine' },
+            { done: true, text: 'W&B connected for live tracking' },
+            { done: false, text: 'Write the training script' },
+            { done: false, text: 'Run first training session' },
+            { done: false, text: 'Review results on W&B dashboard' },
+          ]}
+        />
+      </Section>
     </div>
   );
 }
 
-function InfoCard({ title, items }: { title: string; items: string[] }) {
+/* ───────────────────────── SHARED COMPONENTS ───────────────────────── */
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-slate-950/50 p-4 rounded-lg border border-slate-700">
-      <h4 className="font-medium text-emerald-400 mb-2">{title}</h4>
-      <ul className="space-y-1 text-sm">
-        {items.map((item, i) => (
-          <li key={i} className="text-slate-400">• {item}</li>
-        ))}
-      </ul>
+    <div>
+      <h3 className="text-xl font-semibold text-emerald-300 mb-3">{title}</h3>
+      <div className="text-slate-300 leading-relaxed">{children}</div>
+    </div>
+  );
+}
+
+function Callout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="bg-emerald-950/30 border-l-4 border-emerald-500 p-5 rounded-r-lg text-emerald-100 leading-relaxed">
+      {children}
+    </div>
+  );
+}
+
+function ToolCard({ name, role, description }: { name: string; role: string; description: string }) {
+  return (
+    <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-5">
+      <h4 className="font-semibold text-white">{name}</h4>
+      <p className="text-emerald-400 text-sm mb-2">{role}</p>
+      <p className="text-sm text-slate-400 leading-relaxed">{description}</p>
+    </div>
+  );
+}
+
+function MetricCard({ name, description }: { name: string; description: string }) {
+  return (
+    <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+      <h4 className="font-medium text-white text-sm">{name}</h4>
+      <p className="text-sm text-slate-400 mt-1">{description}</p>
+    </div>
+  );
+}
+
+function Line({ label, value, comment }: { label: string; value: string; comment: string }) {
+  return (
+    <div className="flex gap-4 items-baseline">
+      <span className="text-slate-500">{label}:</span>
+      <span className="text-emerald-400">{value}</span>
+      <span className="text-slate-600 text-xs">// {comment}</span>
     </div>
   );
 }
 
 function ConfigRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-      <span className="text-slate-400">{label}</span>
-      <span className="font-mono text-emerald-400">{value}</span>
+    <div className="flex justify-between items-center px-5 py-3">
+      <span className="text-slate-400 text-sm">{label}</span>
+      <span className="font-mono text-emerald-400 text-sm">{value}</span>
     </div>
   );
 }
 
-function CodeBlock({ title, code }: { title?: string; code: string }) {
+function CodeBlock({ label, code }: { label?: string; code: string }) {
   return (
     <div className="mt-3">
-      {title && <div className="text-sm text-slate-400 mb-2">{title}</div>}
-      <pre className="bg-slate-950/70 p-4 rounded-lg overflow-x-auto border border-slate-700">
-        <code className="text-emerald-400 text-sm font-mono">{code}</code>
+      {label && <p className="text-sm text-slate-400 mb-2">{label}:</p>}
+      <pre className="bg-slate-950 p-4 rounded-lg overflow-x-auto border border-slate-700">
+        <code className="text-emerald-400 text-sm font-mono whitespace-pre">{code}</code>
       </pre>
     </div>
+  );
+}
+
+function PackageRow({ name, purpose }: { name: string; purpose: string }) {
+  return (
+    <div className="flex justify-between items-center px-5 py-3 gap-4">
+      <span className="font-mono text-emerald-400 text-sm whitespace-nowrap">{name}</span>
+      <span className="text-slate-400 text-sm text-right">{purpose}</span>
+    </div>
+  );
+}
+
+function Step({ number, title, children }: { number: number; title: string; children: React.ReactNode }) {
+  return (
+    <li className="flex gap-4">
+      <span className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-900/50 border border-emerald-700 flex items-center justify-center text-emerald-400 text-sm font-bold">
+        {number}
+      </span>
+      <div>
+        <p className="font-medium text-white">{title}</p>
+        <p className="text-slate-400 text-sm mt-1 leading-relaxed">{children}</p>
+      </div>
+    </li>
+  );
+}
+
+function StatusList({ items }: { items: { done: boolean; text: string }[] }) {
+  return (
+    <ul className="space-y-3">
+      {items.map((item, i) => (
+        <li key={i} className="flex items-center gap-3">
+          <span className={`flex-shrink-0 w-5 h-5 rounded-full border flex items-center justify-center text-xs ${
+            item.done
+              ? 'bg-emerald-900/50 border-emerald-600 text-emerald-400'
+              : 'border-slate-600 text-slate-600'
+          }`}>
+            {item.done ? '✓' : ''}
+          </span>
+          <span className={`text-sm ${item.done ? 'text-slate-400' : 'text-slate-300'}`}>
+            {item.text}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -359,22 +496,5 @@ function ProductCard({ title, status, description }: { title: string; status: st
       </div>
       <p className="text-sm text-slate-400">{description}</p>
     </div>
-  );
-}
-
-function StatusList({ items }: { items: { done: boolean; text: string }[] }) {
-  return (
-    <ul className="space-y-2">
-      {items.map((item, i) => (
-        <li key={i} className="flex items-center gap-3">
-          <span className={`text-lg ${item.done ? 'text-emerald-400' : 'text-slate-600'}`}>
-            {item.done ? '✓' : '○'}
-          </span>
-          <span className={item.done ? 'text-slate-400 line-through' : 'text-slate-300'}>
-            {item.text}
-          </span>
-        </li>
-      ))}
-    </ul>
   );
 }

@@ -42,9 +42,7 @@ export default function WhyGardenRL() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-8">
         <div className="text-center mb-16 fade-in-up">
-          <div className="inline-flex items-center gap-3 px-6 py-3 bg-emerald-500/10 border border-emerald-500/30 rounded-full mb-8">
-            <span className="text-emerald-400 font-mono text-sm">Problem Statement 2 & 3.1 • Mercor Sub-Bounty</span>
-          </div>
+          <hr className="max-w-md mx-auto mb-8 border-emerald-500/30" />
           <h2 className="display-medium mb-6">
             Why <span className="gradient-green">GardenRL</span>?
           </h2>

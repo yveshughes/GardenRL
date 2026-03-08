@@ -90,6 +90,11 @@ function generateThought(changed: keyof ControlValues, values: ControlValues): A
   };
 }
 
+// --- Props ---
+interface GantryRobotDemoProps {
+  mode?: 'simulation' | 'live';
+}
+
 // --- Slider config ---
 const sliderConfig = [
   { key: 'temperature' as const, label: 'Temperature', unit: '°C', min: 15, max: 30, step: 0.5, optimal: [18, 26] },
@@ -107,7 +112,7 @@ function getStatusColor(key: keyof ControlValues, value: number): string {
 // =============================================
 // Main Component
 // =============================================
-export default function GantryRobotDemo() {
+export default function GantryRobotDemo({ mode = 'simulation' }: GantryRobotDemoProps = {}) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [values, setValues] = useState<ControlValues>({ temperature: 22, ec: 1.5, ph: 6.0 });
   const [aiState, setAIState] = useState<AIState>('idle');
