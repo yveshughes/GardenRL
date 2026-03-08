@@ -2,6 +2,13 @@
 _files/
 .claude/
 .agents/
+CLAUDE.md
+
+# Training artifacts
+wandb/
+.art/
+training_logs/
+eval_results/
 
 # Python
 __pycache__/

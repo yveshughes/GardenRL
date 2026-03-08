@@ -25,6 +25,17 @@ dev = [
     "pytest>=8.0.0",
     "pytest-cov>=4.0.0",
 ]
+# ART RL training (install on GPU machine only)
+# Client: pip install .[art]
+# GPU backend: pip install .[art-backend]
+art = [
+    "openpipe-art>=0.1.0",
+    "pyarrow>=18.0.0",
+]
+art-backend = [
+    "openpipe-art[backend]>=0.1.0",  # Includes vLLM + Unsloth
+    "pyarrow>=18.0.0",
+]
 
 [project.scripts]
 # Server entry point - enables running via: uv run --project . server
