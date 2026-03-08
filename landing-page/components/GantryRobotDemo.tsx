@@ -497,7 +497,7 @@ export default function GantryRobotDemo() {
 
         {/* Why this works for RL */}
         <div className="bg-gray-900/40 border border-gray-800/50 rounded-lg p-3">
-          <div className="text-gray-600 font-mono text-[10px] uppercase tracking-wider mb-1.5">Why It's Verifiable</div>
+          <div className="text-gray-600 font-mono text-[10px] uppercase tracking-wider mb-1.5">Why It&apos;s Verifiable</div>
           <div className="text-gray-500 text-[10px] leading-relaxed">
             Put the lettuce on a scale. The reward is deterministic — no human judgment needed.
           </div>

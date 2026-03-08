@@ -18,8 +18,8 @@ export default function RobotDemo() {
           </p>
           <p className="text-gray-500 max-w-3xl mx-auto text-lg">
             The environment provides sensor readings (pH, EC, leaf color). Agents that reason in detail
-            about the plant's hidden state — <em>"pH 7.2 blocks calcium uptake, causing tip burn"</em> —
-            learn faster than those taking random actions. That's the <strong className="text-emerald-400">Mercor sub-bounty</strong> in action.
+            about the plant&apos;s hidden state — <em>&quot;pH 7.2 blocks calcium uptake, causing tip burn&quot;</em> —
+            learn faster than those taking random actions. That&apos;s the <strong className="text-emerald-400">Mercor sub-bounty</strong> in action.
           </p>
         </div>
 

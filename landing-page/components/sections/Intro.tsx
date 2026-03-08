@@ -19,8 +19,8 @@ export default function Intro() {
               </span>
             </h1>
             <p className="text-2xl text-gray-300 leading-relaxed max-w-3xl mx-auto">
-              I'm an avid hydroponic gardener. Over the last decade, I've built greenhouses,
-              extensive outdoor setups, and learned every lesson the hard way. Recently, I've become
+              I&apos;m an avid hydroponic gardener. Over the last decade, I&apos;ve built greenhouses,
+              extensive outdoor setups, and learned every lesson the hard way. Recently, I&apos;ve become
               obsessed with AI and Robotics so this was a fun experiment...
             </p>
           </div>
@@ -67,19 +67,19 @@ export default function Intro() {
           {/* The Challenge */}
           <div className="text-center mb-12 fade-in-up delay-2">
             <p className="text-2xl text-gray-300 leading-relaxed max-w-3xl mx-auto mb-6">
-              But here's the challenge: <span className="text-emerald-400 font-semibold">How do you teach an AI
+              But here&apos;s the challenge: <span className="text-emerald-400 font-semibold">How do you teach an AI
               to optimize growing conditions across 30-day cycles with delayed feedback?</span>
             </p>
             <p className="text-lg text-gray-400 max-w-2xl mx-auto">
               Most RL environments give immediate rewards. But in farming, a pH mistake today causes
-              nutrient lockout tomorrow and harvest loss weeks later. That's <strong className="text-white">genuine long-horizon planning</strong>.
+              nutrient lockout tomorrow and harvest loss weeks later. That&apos;s <strong className="text-white">genuine long-horizon planning</strong>.
             </p>
           </div>
 
           {/* Transition */}
           <div className="text-center fade-in-up delay-3">
             <div className="text-gray-400 text-xl mb-4">
-              That's why I built...
+              That&apos;s why I built...
             </div>
             <div className="text-5xl font-bold gradient-green mb-3">
               GardenRL

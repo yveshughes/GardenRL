@@ -38,13 +38,13 @@ Based on the **HydroGrowNet of Batavia** dataset (390,000+ images from real NFT 
 
 ## Quick Start
 
-The simplest way to use GardenRL is through the `GardenEnv` class:
+The simplest way to use GardenRL is through the `GardenrlEnv` class:
 
 ```python
-from GardenRL import GardenAction, GardenEnv
+from GardenRL import GardenrlAction, GardenrlEnv
 
 # Connect to the environment
-env = GardenEnv(base_url="https://huggingface.co/spaces/<your-space>/web")
+env = GardenrlEnv(base_url="https://huggingface.co/spaces/<your-space>/web")
 
 # Start a new growing cycle
 result = env.reset()
@@ -55,19 +55,19 @@ print(f"Plant status: {result.observation.growth_stage}")
 for day in range(30):
     # Agent decides action based on observations
     if result.observation.ph > 6.5:
-        action = GardenAction(
+        action = GardenrlAction(
             action_type="adjust_ph_down",
             amount=0.3,
             reasoning="pH too high, risk of phosphorus lockout"
         )
     elif result.observation.ec < 1.2:
-        action = GardenAction(
+        action = GardenrlAction(
             action_type="add_nutrients",
             amount=0.4,
             reasoning="EC low, plants showing nutrient deficiency"
         )
     else:
-        action = GardenAction(
+        action = GardenrlAction(
             action_type="maintain",
             reasoning="Conditions optimal, monitoring for drift"
         )
@@ -176,7 +176,7 @@ The deployed space includes:
 ## Environment Details
 
 ### Action Space
-**GardenAction**: Agent actions for managing the hydroponic system
+**GardenrlAction**: Agent actions for managing the hydroponic system
 
 ```python
 action_type: str  # One of:
@@ -191,7 +191,7 @@ reasoning: str    # Agent's diagnosis/reasoning (encouraged for better outcomes)
 ```
 
 ### Observation Space
-**GardenObservation**: Rich sensory data about plant and system state
+**GardenrlObservation**: Rich sensory data about plant and system state
 
 ```python
 # Time
@@ -385,8 +385,8 @@ GardenRL/
 ├── PROJECT_SCOPE.md               # Detailed hackathon scope
 ├── openenv.yaml                   # OpenEnv manifest
 ├── pyproject.toml                 # Dependencies
-├── models.py                      # GardenAction & GardenObservation
-├── client.py                      # GardenEnv client
+├── models.py                      # GardenrlAction & GardenrlObservation
+├── client.py                      # GardenrlEnv client
 └── server/
     ├── GardenRL_environment.py   # Core simulation logic
     ├── app.py                     # FastAPI server

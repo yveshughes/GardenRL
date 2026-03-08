@@ -129,10 +129,10 @@ export default function HowItWorks() {
         >
           <h3 className="text-2xl font-bold mb-6 text-[#38BDF8]">Simple API</h3>
           <pre className="text-sm overflow-x-auto">
-            <code className="text-blue-100">{`from GardenRL import GardenEnv, GardenAction
+            <code className="text-blue-100">{`from GardenRL import GardenrlEnv, GardenrlAction
 
 # Connect to environment
-env = GardenEnv(base_url="https://hf.space/gardenrl")
+env = GardenrlEnv(base_url="https://hf.space/gardenrl")
 
 # Reset for new episode
 obs = env.reset()
@@ -142,13 +142,13 @@ print(f"Day {obs.day}: pH={obs.ph:.2f}, EC={obs.ec:.2f}")
 for day in range(30):
     # Observe → Reason → Act
     if obs.ph > 6.5:
-        action = GardenAction(
+        action = GardenrlAction(
             action_type="adjust_ph_down",
             amount=0.3,
             reasoning="pH too high, risk of nutrient lockout"
         )
     else:
-        action = GardenAction(action_type="maintain")
+        action = GardenrlAction(action_type="maintain")
 
     # Step environment
     obs = env.step(action)

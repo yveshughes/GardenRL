@@ -16,7 +16,7 @@ from .models import GardenrlAction, GardenrlObservation
 
 
 class GardenrlEnv(
-    EnvClient[GardenrlAction, GardenrlObservation]
+    EnvClient[GardenrlAction, GardenrlObservation, State]
 ):
     """
     Client for the Gardenrl Environment.
@@ -29,17 +29,20 @@ class GardenrlEnv(
         >>> # Connect to a running server
         >>> with GardenrlEnv(base_url="http://localhost:8000") as client:
         ...     result = client.reset()
-        ...     print(result.observation.echoed_message)
+        ...     print(f"Day {result.observation.day}: pH={result.observation.ph}")
         ...
-        ...     result = client.step(GardenrlAction(message="Hello!"))
-        ...     print(result.observation.echoed_message)
+        ...     # Adjust pH if too high
+        ...     if result.observation.ph > 6.5:
+        ...         action = GardenrlAction(action_type="adjust_ph_down", ph_adjustment=0.3)
+        ...         result = client.step(action)
 
     Example with Docker:
         >>> # Automatically start container and connect
         >>> client = GardenrlEnv.from_docker_image("GardenRL-env:latest")
         >>> try:
         ...     result = client.reset()
-        ...     result = client.step(GardenrlAction(message="Test"))
+        ...     action = GardenrlAction(action_type="maintain")
+        ...     result = client.step(action)
         ... finally:
         ...     client.close()
     """
@@ -55,7 +58,11 @@ class GardenrlEnv(
             Dictionary representation suitable for JSON encoding
         """
         return {
-            "message": action.message,
+            "action_type": action.action_type,
+            "ph_adjustment": action.ph_adjustment,
+            "nutrient_adjustment": action.nutrient_adjustment,
+            "temperature_target": action.temperature_target,
+            "reasoning": action.reasoning,
         }
 
     def _parse_result(self, payload: Dict) -> StepResult[GardenrlObservation]:
@@ -70,16 +77,23 @@ class GardenrlEnv(
         """
         obs_data = payload.get("observation", {})
         observation = GardenrlObservation(
-            echoed_message=obs_data.get("echoed_message", ""),
-            message_length=obs_data.get("message_length", 0),
+            day=obs_data.get("day", 0),
+            ph=obs_data.get("ph", 6.0),
+            ec=obs_data.get("ec", 1.6),
+            water_temp=obs_data.get("water_temp", 20.0),
+            leaf_color=obs_data.get("leaf_color", "healthy_green"),
+            estimated_leaf_count=obs_data.get("estimated_leaf_count", 0),
+            plant_height_cm=obs_data.get("plant_height_cm", 0.0),
+            growth_stage=obs_data.get("growth_stage", "seedling"),
+            warnings=obs_data.get("warnings", []),
+            reward=payload.get("reward", 0.0),
             done=payload.get("done", False),
-            reward=payload.get("reward"),
             metadata=obs_data.get("metadata", {}),
         )
 
         return StepResult(
             observation=observation,
-            reward=payload.get("reward"),
+            reward=payload.get("reward", 0.0),
             done=payload.get("done", False),
         )
 
