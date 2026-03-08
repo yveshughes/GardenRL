@@ -345,7 +345,6 @@ async def _rollout_inner(
         "maintain": 0,
         "harvest": 0,
     }
-    cumulative_condition = 0.0
     steps_taken = 0
     inference_fallback_used = 0
 
@@ -417,37 +416,17 @@ async def _rollout_inner(
         obs = env.step(action)
         steps_taken += 1
 
-        # Dense condition signal (0-1), independent from terminal harvest reward.
-        ph_score = max(0.0, 1.0 - abs(obs.ph - 6.0) / 2.0)
-        ec_score = max(0.0, 1.0 - abs(obs.ec - 1.6) / 1.6)
-        temp_score = max(0.0, 1.0 - abs(obs.water_temp - 20.0) / 8.0)
-        condition_score = 0.45 * ph_score + 0.45 * ec_score + 0.10 * temp_score
-        cumulative_condition += condition_score
-
         if obs.done:
             break
 
-    # Terminal harvest reward (0-1)
-    harvest_weight = obs.reward / 10.0  # obs.reward = biomass * 10
-    terminal_reward = harvest_weight / 250.0  # Normalize: 0 = dead, 1 = perfect
+    # Environment now returns shaped reward (0-1) directly
+    trajectory.reward = obs.reward
 
-    # Dense shaping to avoid all-zero gradients early in training.
-    avg_condition = cumulative_condition / max(steps_taken, 1)
-    survival_ratio = min(obs.day, episode_days) / float(episode_days)
-    dense_reward = 0.5 * avg_condition + 0.5 * survival_ratio
-
-    # Keep terminal reward dominant when harvest succeeds; provide a small
-    # non-harvest gradient so policy can still improve early.
-    if harvest_weight > 0:
-        trajectory.reward = 0.7 * terminal_reward + 0.3 * dense_reward
-    else:
-        trajectory.reward = 0.15 * dense_reward
+    # Extract harvest weight from metadata
+    harvest_weight = obs.metadata.get("biomass_hidden", 0.0) if obs.metadata else 0.0
 
     # Track metrics for W&B
     trajectory.metrics["harvest_weight"] = harvest_weight
-    trajectory.metrics["reward_raw"] = obs.reward
-    trajectory.metrics["terminal_reward"] = terminal_reward
-    trajectory.metrics["dense_reward"] = dense_reward
     trajectory.metrics["days_survived"] = obs.day
     trajectory.metrics["final_ph"] = obs.ph
     trajectory.metrics["final_ec"] = obs.ec

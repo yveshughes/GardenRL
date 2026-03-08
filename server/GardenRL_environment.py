@@ -36,7 +36,7 @@ class GardenrlEnvironment(Environment):
 
     Observation space: pH, EC, temp, leaf color, leaf count, height, growth stage, warnings
     Action space: Adjust pH up/down, add/dilute nutrients, heat/cool water, maintain, harvest
-    Reward: Harvest weight × 10 (150-250g healthy = 1500-2500 reward, 0g dead = 0 reward)
+    Reward: Shaped 0-1 reward combining terminal harvest and dense condition signals
 
     Example:
         >>> env = GardenrlEnvironment()
@@ -84,6 +84,10 @@ class GardenrlEnvironment(Environment):
         self._leaf_count = 2  # Seedlings start with 2 cotyledons
         self._height_cm = 2.0  # Seedling height
 
+        # Reward shaping accumulators
+        self._cumulative_condition = 0.0
+        self._steps_taken = 0
+
     def reset(self) -> GardenrlObservation:
         """
         Reset environment to day 0 with a fresh seedling.
@@ -112,6 +116,10 @@ class GardenrlEnvironment(Environment):
         # Reset derived metrics
         self._leaf_count = 2
         self._height_cm = 2.0
+
+        # Reset reward shaping accumulators
+        self._cumulative_condition = 0.0
+        self._steps_taken = 0
 
         return self._generate_observation()
 
@@ -143,6 +151,13 @@ class GardenrlEnvironment(Environment):
             growth_rate = self._calculate_growth_rate()
             self._update_plant(growth_rate)
             self._check_death()
+
+        # Accumulate dense condition signal for reward shaping
+        self._steps_taken += 1
+        ph_score = max(0.0, 1.0 - abs(self._ph - 6.0) / 2.0)
+        ec_score = max(0.0, 1.0 - abs(self._ec - 1.6) / 1.6)
+        temp_score = max(0.0, 1.0 - abs(self._water_temp - 20.0) / 8.0)
+        self._cumulative_condition += 0.45 * ph_score + 0.45 * ec_score + 0.10 * temp_score
 
         return self._generate_observation()
 
@@ -345,21 +360,29 @@ class GardenrlEnvironment(Environment):
         # Generate warnings based on state
         warnings = self._get_warnings()
 
-        # Calculate reward
+        # Calculate shaped reward (0-1 scale)
         reward = 0.0
         done = False
 
         # Episode ends on: harvest, death, or day 30
         if self._harvested or not self._alive or self._day >= 30:
             done = True
-            if self._harvested and self._alive:
-                # Reward = harvest weight × 10
-                # Healthy plant (200g) = 2000 reward
-                # Stressed plant (100g) = 1000 reward
-                reward = self._biomass * 10.0
+
+            # Terminal harvest reward (0-1)
+            harvest_weight = self._biomass if (self._harvested and self._alive) else 0.0
+            terminal_reward = harvest_weight / 250.0  # 250g = perfect harvest
+
+            # Dense condition signal: average condition quality + survival ratio
+            avg_condition = self._cumulative_condition / max(self._steps_taken, 1)
+            survival_ratio = min(self._day, 30) / 30.0
+            dense_reward = 0.5 * avg_condition + 0.5 * survival_ratio
+
+            if harvest_weight > 0:
+                # Harvest succeeded: terminal reward dominant
+                reward = 0.7 * terminal_reward + 0.3 * dense_reward
             else:
-                # Dead plant or unharvested = 0 reward
-                reward = 0.0
+                # No harvest: small dense signal so policy can still learn
+                reward = 0.15 * dense_reward
 
         # Determine growth stage
         growth_stage = self._get_growth_stage()

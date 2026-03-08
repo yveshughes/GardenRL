@@ -246,15 +246,27 @@ function HowItWorksTab() {
           </div>
 
           <div>
-            <h4 className="text-lg font-semibold text-emerald-300 mb-2">3. Reward Function</h4>
-            <CodeBlock code={`# Reward = harvest weight in grams × 10
-# Examples:
-#   Dead plant: 0 reward
-#   Poor harvest (50g): 500 reward
-#   Good harvest (150g): 1500 reward
-#   Excellent (200g+): 2000+ reward
+            <h4 className="text-lg font-semibold text-emerald-300 mb-2">3. Reward Function (Shaped, 0&ndash;1)</h4>
+            <CodeBlock code={`# Terminal reward: harvest weight normalized to 0-1
+terminal = harvest_weight / 250.0  # 250g = perfect
 
-reward = harvest_weight * 10`} />
+# Dense signal: how well conditions were maintained
+ph_score  = max(0, 1 - |pH - 6.0| / 2.0)
+ec_score  = max(0, 1 - |EC - 1.6| / 1.6)
+tmp_score = max(0, 1 - |temp - 20| / 8.0)
+condition = 0.45*ph + 0.45*ec + 0.10*tmp  # per-day
+dense = 0.5 * avg_condition + 0.5 * survival_ratio
+
+# Combined
+if harvest_weight > 0:
+    reward = 0.7 * terminal + 0.3 * dense
+else:
+    reward = 0.15 * dense   # small gradient even without harvest`} />
+            <p className="text-sm text-slate-500 mt-3">
+              The dense component lets GRPO learn from condition management during short curriculum episodes
+              (14&ndash;24 days) where no harvest is possible. Once 30-day episodes begin, the terminal component
+              dominates and drives harvest maximization.
+            </p>
           </div>
 
           <div>

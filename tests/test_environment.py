@@ -88,8 +88,8 @@ def test_harvest_action():
     obs = env.step(action)
     assert obs.done is True
     assert obs.reward > 0  # Should get harvest reward
-    # Biomass continues growing during the harvest step, so reward will be slightly higher
-    assert obs.reward >= 2000.0  # At least 200g × 10
+    # Shaped reward: 0.7 * (biomass/250) + 0.3 * dense_signal, range 0-1
+    assert obs.reward > 0.5  # Healthy 200g+ plant should score well
 
 
 def test_death_condition_extreme_ph():

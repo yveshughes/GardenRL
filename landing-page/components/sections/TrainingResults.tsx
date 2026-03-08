@@ -24,7 +24,7 @@ export default function TrainingResults() {
         <div className="text-center mb-12">
           <h2 className="display-medium mb-4">Growing More Food with RL</h2>
           <p className="text-xl text-gray-400 mb-6">
-            If we can optimize yield, we can feed more people. 127 steps of GRPO training took harvest weight from 0g to 200g.
+            If we can optimize yield, we can feed more people. 127 steps of Group Relative Policy Optimization (GRPO) training took harvest weight from 0g to 200g.
           </p>
           <a
             href="https://wandb.ai/ndmm/gardenrl-training/runs/p8rggsh0"
