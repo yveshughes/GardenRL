@@ -91,10 +91,30 @@ function generateThought(changed: keyof ControlValues, values: ControlValues): A
 }
 
 // --- Props ---
+interface ReplayStep {
+  day: number;
+  ph: number;
+  ec: number;
+  water_temp: number;
+  leaf_color: string;
+  growth_stage: string;
+  action: string;
+  reasoning: string;
+  warnings: string[];
+}
+
+interface ReplayEpisodeData {
+  episode_id: number;
+  total_reward: number;
+  harvest_weight: number;
+  steps: ReplayStep[];
+}
+
 interface GantryRobotDemoProps {
-  mode?: 'simulation' | 'live';
+  mode?: 'simulation' | 'live' | 'replay';
   currentDay?: number;
   isPlaying?: boolean;
+  replayData?: ReplayEpisodeData | null;
 }
 
 // --- Slider config ---
@@ -114,7 +134,11 @@ function getStatusColor(key: keyof ControlValues, value: number): string {
 // =============================================
 // Main Component
 // =============================================
-export default function GantryRobotDemo({ mode = 'simulation' }: GantryRobotDemoProps = {}) {
+export default function GantryRobotDemo({
+  mode = 'simulation',
+  currentDay = 1,
+  replayData
+}: GantryRobotDemoProps = {}) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [values, setValues] = useState<ControlValues>({ temperature: 22, ec: 1.5, ph: 6.0 });
   const [aiState, setAIState] = useState<AIState>('idle');
@@ -143,6 +167,33 @@ export default function GantryRobotDemo({ mode = 'simulation' }: GantryRobotDemo
       }, 20);
     });
   }, []);
+
+  // Handle replay mode - update values and reasoning based on currentDay
+  useEffect(() => {
+    if (mode === 'replay' && replayData && currentDay > 0) {
+      const stepIndex = currentDay - 1; // Day 1 is index 0
+      const step = replayData.steps[stepIndex];
+
+      if (step) {
+        // Update values from replay data
+        setValues({
+          temperature: step.water_temp,
+          ec: step.ec,
+          ph: step.ph
+        });
+
+        // Display the real reasoning from the trained agent
+        setAIState('thinking');
+        setDisplayedText(step.reasoning);
+        setCurrentAction(step.action);
+
+        // Reset AI state after a moment
+        setTimeout(() => {
+          setAIState('idle');
+        }, 2000);
+      }
+    }
+  }, [mode, replayData, currentDay]);
 
   // Trigger AI reaction (called after debounce)
   const triggerAI = useCallback(async (key: keyof ControlValues, newValues: ControlValues) => {

@@ -4,11 +4,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Intro from '@/components/sections/Intro';
 import Hero from '@/components/sections/Hero';
-import Challenge from '@/components/sections/Challenge';
-import TheScience from '@/components/sections/TheScience';
 import WhyGardenRL from '@/components/sections/WhyGardenRL';
-import HowItWorks from '@/components/sections/HowItWorks';
 import RobotDemo from '@/components/sections/RobotDemo';
+import TrainingResults from '@/components/sections/TrainingResults';
 import TryIt from '@/components/sections/TryIt';
 import ProgressIndicator from '@/components/ProgressIndicator';
 
@@ -39,7 +37,7 @@ export default function Home() {
 
   return (
     <>
-      <ProgressIndicator current={currentSection} total={8} />
+      <ProgressIndicator current={currentSection} total={6} />
 
       {/* Tech Specs Button */}
       <Link
@@ -52,11 +50,9 @@ export default function Home() {
       <main>
         <Intro />
         <Hero />
-        <Challenge />
-        <TheScience />
         <WhyGardenRL />
-        <HowItWorks />
         <RobotDemo />
+        <TrainingResults />
         <TryIt />
       </main>
     </>

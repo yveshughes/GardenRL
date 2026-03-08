@@ -22,11 +22,15 @@ from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent))
-
-from server.GardenRL_environment import GardenrlEnvironment
-from models import GardenrlAction
+# Import from installed package (works because we did pip install -e .)
+try:
+    from GardenRL.server.GardenRL_environment import GardenrlEnvironment
+    from GardenRL.models import GardenrlAction
+except ImportError:
+    # Fallback: Add project root to path for local development
+    sys.path.insert(0, str(Path(__file__).parent))
+    from server.GardenRL_environment import GardenrlEnvironment
+    from models import GardenrlAction
 
 # W&B import (will install if needed)
 try:

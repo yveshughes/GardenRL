@@ -3,15 +3,49 @@
 import { useState, useEffect } from 'react';
 import GantryRobotDemo from '@/components/GantryRobotDemo';
 
+interface ReplayEpisode {
+  episode_id: number;
+  total_reward: number;
+  harvest_weight: number;
+  days_survived: number;
+  steps: Array<{
+    day: number;
+    ph: number;
+    ec: number;
+    water_temp: number;
+    leaf_color: string;
+    growth_stage: string;
+    action: string;
+    reasoning: string;
+    warnings: string[];
+  }>;
+}
+
 export default function RobotDemo() {
-  const [mode, setMode] = useState<'simulation' | 'live'>('simulation');
+  const [mode, setMode] = useState<'simulation' | 'live' | 'replay'>('simulation');
   const [currentDay, setCurrentDay] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
   const [timeSpeed, setTimeSpeed] = useState(1); // 1x or 10x
+  const [replayData, setReplayData] = useState<ReplayEpisode | null>(null);
 
-  // Auto-advance days in LIVE mode
+  // Load replay data when replay mode is selected
   useEffect(() => {
-    if (mode === 'live' && isPlaying && currentDay < 30) {
+    if (mode === 'replay' && !replayData) {
+      fetch('/data/episode-replay.json')
+        .then(res => res.json())
+        .then(data => {
+          setReplayData(data);
+          setCurrentDay(1); // Reset to day 1
+        })
+        .catch(err => {
+          console.error('Failed to load replay data:', err);
+        });
+    }
+  }, [mode, replayData]);
+
+  // Auto-advance days in LIVE or REPLAY mode
+  useEffect(() => {
+    if ((mode === 'live' || mode === 'replay') && isPlaying && currentDay < 30) {
       const interval = setInterval(() => {
         setCurrentDay(prev => Math.min(prev + 1, 30));
       }, 1000 / timeSpeed);
@@ -59,7 +93,7 @@ export default function RobotDemo() {
                 <div className="flex items-center gap-2 bg-gray-950/80 rounded-lg p-1">
                   <button
                     onClick={() => setMode('simulation')}
-                    className={`px-6 py-2.5 rounded-md font-semibold text-sm transition-all ${
+                    className={`px-4 py-2.5 rounded-md font-semibold text-sm transition-all ${
                       mode === 'simulation'
                         ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/50'
                         : 'text-gray-400 hover:text-gray-200'
@@ -68,8 +102,22 @@ export default function RobotDemo() {
                     SIMULATION
                   </button>
                   <button
+                    onClick={() => {
+                      setMode('replay');
+                      setCurrentDay(1);
+                      setIsPlaying(false);
+                    }}
+                    className={`px-4 py-2.5 rounded-md font-semibold text-sm transition-all ${
+                      mode === 'replay'
+                        ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/50'
+                        : 'text-gray-400 hover:text-gray-200'
+                    }`}
+                  >
+                    REPLAY
+                  </button>
+                  <button
                     onClick={() => setMode('live')}
-                    className={`px-6 py-2.5 rounded-md font-semibold text-sm transition-all ${
+                    className={`px-4 py-2.5 rounded-md font-semibold text-sm transition-all ${
                       mode === 'live'
                         ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/50'
                         : 'text-gray-400 hover:text-gray-200'
@@ -90,6 +138,23 @@ export default function RobotDemo() {
                       <p className="text-gray-500 text-xs leading-relaxed">
                         Fast, client-side simulation with pre-programmed AI reasoning.
                         Instant response, no server needed. Perfect for exploring the mechanics.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : mode === 'replay' ? (
+                <div className="flex-1 min-w-[300px]">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 animate-pulse" />
+                    <div>
+                      <p className="text-blue-400 text-sm font-semibold mb-0.5">
+                        Replay Mode {replayData && `• Episode #${replayData.episode_id}`}
+                      </p>
+                      <p className="text-gray-500 text-xs leading-relaxed">
+                        {replayData
+                          ? `Real trained agent episode - ${replayData.harvest_weight.toFixed(1)}g harvest, reward ${replayData.total_reward}. This is authentic data from our W&B training runs.`
+                          : 'Loading real episode data...'
+                        }
                       </p>
                     </div>
                   </div>
@@ -150,6 +215,7 @@ export default function RobotDemo() {
             mode={mode}
             currentDay={currentDay}
             isPlaying={isPlaying}
+            replayData={mode === 'replay' ? replayData : undefined}
           />
         </div>
       </div>
