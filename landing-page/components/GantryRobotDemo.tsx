@@ -93,6 +93,8 @@ function generateThought(changed: keyof ControlValues, values: ControlValues): A
 // --- Props ---
 interface GantryRobotDemoProps {
   mode?: 'simulation' | 'live';
+  currentDay?: number;
+  isPlaying?: boolean;
 }
 
 // --- Slider config ---

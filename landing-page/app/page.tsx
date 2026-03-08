@@ -4,8 +4,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Intro from '@/components/sections/Intro';
 import Hero from '@/components/sections/Hero';
+import Challenge from '@/components/sections/Challenge';
+import TheScience from '@/components/sections/TheScience';
 import WhyGardenRL from '@/components/sections/WhyGardenRL';
+import HowItWorks from '@/components/sections/HowItWorks';
 import RobotDemo from '@/components/sections/RobotDemo';
+import TryIt from '@/components/sections/TryIt';
 import ProgressIndicator from '@/components/ProgressIndicator';
 
 export default function Home() {
@@ -35,7 +39,7 @@ export default function Home() {
 
   return (
     <>
-      <ProgressIndicator current={currentSection} total={4} />
+      <ProgressIndicator current={currentSection} total={8} />
 
       {/* Tech Specs Button */}
       <Link
@@ -48,8 +52,12 @@ export default function Home() {
       <main>
         <Intro />
         <Hero />
+        <Challenge />
+        <TheScience />
         <WhyGardenRL />
+        <HowItWorks />
         <RobotDemo />
+        <TryIt />
       </main>
     </>
   );

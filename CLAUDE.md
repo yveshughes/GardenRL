@@ -191,6 +191,23 @@ docker build -t gardenrl-env:latest -f server/Dockerfile .
 - A production farming system (it's a simulation)
 - Over-engineered (keep it simple and focused)
 
+### ⚠️ CRITICAL HACKATHON CONSTRAINT
+
+**NEVER use simulated, synthetic, or fake training data/results.**
+
+- All training results visualizations MUST use real data from actual training runs
+- All W&B charts MUST show authentic logged metrics
+- All episode data MUST come from real environment executions
+- Using fake/simulated data could disqualify us from the hackathon
+
+**If real training data doesn't exist yet:**
+- Run actual training episodes to generate it
+- Use real test suite execution results
+- Execute example_episode.py with different seeds
+- NEVER fabricate or extrapolate data for demonstration purposes
+
+This is non-negotiable for hackathon integrity.
+
 ## Design Principles
 
 1. **Scientific Accuracy:** All hydroponic parameters based on real data
