@@ -144,6 +144,9 @@ export default function GantryRobotDemo({
   const [aiState, setAIState] = useState<AIState>('idle');
   const [displayedText, setDisplayedText] = useState('');
   const [currentAction, setCurrentAction] = useState('');
+  const [actionLog, setActionLog] = useState<{ day: number; action: string }[]>([]);
+  const [harvested, setHarvested] = useState(false);
+  const [harvestResult, setHarvestResult] = useState<{ weight: number; leafCount: number; survived: boolean; reward: number } | null>(null);
   const carriageTargetRef = useRef(0);
   const carriagePosRef = useRef(0);
   const debounceRef = useRef<{ timer: ReturnType<typeof setTimeout> | null; key: keyof ControlValues | null }>({ timer: null, key: null });
@@ -195,6 +198,99 @@ export default function GantryRobotDemo({
     }
   }, [mode, replayData, currentDay]);
 
+  // Handle live mode - randomly drift sensors each day and trigger AI
+  const prevDayRef = useRef(currentDay);
+  useEffect(() => {
+    if (mode !== 'live' || currentDay === prevDayRef.current) {
+      prevDayRef.current = currentDay;
+      return;
+    }
+    prevDayRef.current = currentDay;
+
+    setValues(prev => {
+      // Random walk with mean-reversion toward realistic centers
+      const drift = (val: number, center: number, volatility: number, min: number, max: number) => {
+        const pull = (center - val) * 0.1; // gentle mean-reversion
+        const noise = (Math.random() - 0.5) * volatility;
+        return Math.round(Math.max(min, Math.min(max, val + pull + noise)) * 10) / 10;
+      };
+
+      const next: ControlValues = {
+        temperature: drift(prev.temperature, 22, 3.0, 15, 30),
+        ec:          drift(prev.ec, 1.5, 0.6, 0.5, 3.0),
+        ph:          drift(prev.ph, 6.0, 0.8, 4.5, 8.0),
+      };
+
+      // Find which sensor changed the most to drive AI reasoning
+      const deltas: [keyof ControlValues, number][] = [
+        ['temperature', Math.abs(next.temperature - prev.temperature) / 15],
+        ['ec', Math.abs(next.ec - prev.ec) / 2.5],
+        ['ph', Math.abs(next.ph - prev.ph) / 3.5],
+      ];
+      const mostChanged = deltas.sort((a, b) => b[1] - a[1])[0][0];
+
+      // Trigger AI reasoning for the biggest change
+      const thought = generateThought(mostChanged, next);
+      setAIState('thinking');
+      setDisplayedText(thought.reasoning);
+      setCurrentAction(thought.action);
+      carriageTargetRef.current = thought.targetY;
+
+      // Log the action
+      if (thought.action !== 'NO_OP') {
+        setActionLog(log => [...log.slice(-9), { day: currentDay, action: thought.detail }]);
+      }
+
+      setTimeout(() => {
+        setAIState('acting');
+        setTimeout(() => setAIState('idle'), 2000);
+      }, 1500);
+
+      return next;
+    });
+
+    // Trigger harvest on day 26
+    if (currentDay >= 26 && !harvested) {
+      setHarvested(true);
+      // Compute reward based on how many good actions were taken
+      const actionCount = actionLog.length;
+      const baseWeight = 120 + Math.random() * 60 + actionCount * 8;
+      const weight = Math.round(baseWeight * 10) / 10;
+      const survived = weight > 80;
+      const harvestScore = weight / 200;
+      const survivalBonus = survived ? 1.0 : 0.0;
+      const penalty = Math.round((actionCount * 0.02 + Math.random() * 0.1) * 100) / 100;
+      const reward = Math.round((harvestScore + survivalBonus - penalty) * 100) / 100;
+      setHarvestResult({
+        weight,
+        leafCount: Math.floor(18 + Math.random() * 14),
+        survived,
+        reward,
+      });
+    }
+  }, [mode, currentDay, harvested, actionLog.length]);
+
+  // Reset action log and harvest when mode changes or day resets to 1
+  useEffect(() => {
+    setActionLog([]);
+    setHarvested(false);
+    setHarvestResult(null);
+    setDisplayedText('');
+    setCurrentAction('');
+    setAIState('idle');
+  }, [mode]);
+
+  useEffect(() => {
+    if (currentDay === 1) {
+      setActionLog([]);
+      setHarvested(false);
+      setHarvestResult(null);
+      setDisplayedText('');
+      setCurrentAction('');
+      setAIState('idle');
+    }
+  }, [currentDay]);
+
   // Trigger AI reaction (called after debounce)
   const triggerAI = useCallback(async (key: keyof ControlValues, newValues: ControlValues) => {
     if (aiState !== 'idle') return;
@@ -210,9 +306,13 @@ export default function GantryRobotDemo({
     setCurrentAction(thought.action);
     carriageTargetRef.current = thought.targetY;
 
+    if (thought.action !== 'NO_OP') {
+      setActionLog(log => [...log.slice(-9), { day: currentDay, action: thought.detail }]);
+    }
+
     await new Promise(r => setTimeout(r, 2000));
     setAIState('idle');
-  }, [aiState, typeText]);
+  }, [aiState, typeText, currentDay]);
 
   // Handle slider change — update value instantly, debounce AI reaction
   const handleSliderChange = useCallback((key: keyof ControlValues, value: number) => {
@@ -496,62 +596,107 @@ export default function GantryRobotDemo({
           <span className="text-white font-mono text-sm font-semibold tracking-wide">Reward</span>
         </div>
 
-        {/* Harvest Day Report Header */}
-        <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg px-3 py-2">
+        {/* Episode progress header */}
+        <div className={`border rounded-lg px-3 py-2 ${
+          harvestResult
+            ? 'bg-emerald-500/10 border-emerald-500/30'
+            : 'bg-gray-900/60 border-gray-800'
+        }`}>
           <div className="flex items-center gap-2">
-            <span className="text-emerald-400 text-sm">🌿</span>
-            <div>
-              <div className="text-emerald-400 font-mono text-[10px] font-bold">HARVEST DAY 26</div>
-              <div className="text-gray-500 text-[10px]">Episode complete — computing reward</div>
+            <span className="text-sm">{harvestResult ? '🌿' : '🌱'}</span>
+            <div className="flex-1">
+              <div className={`font-mono text-[10px] font-bold ${harvestResult ? 'text-emerald-400' : 'text-gray-400'}`}>
+                {harvestResult ? 'HARVEST COMPLETE' : `GROWING — DAY ${currentDay} / 30`}
+              </div>
+              <div className="text-gray-500 text-[10px]">
+                {harvestResult
+                  ? 'Weighed on scale — computing reward'
+                  : `${30 - currentDay} days until harvest`}
+              </div>
             </div>
           </div>
+          {!harvestResult && (
+            <div className="mt-2 w-full bg-gray-800 rounded-full h-1">
+              <div
+                className="bg-emerald-500/60 h-1 rounded-full transition-all duration-500"
+                style={{ width: `${(currentDay / 30) * 100}%` }}
+              />
+            </div>
+          )}
         </div>
 
-        {/* Measurements — what we put on the scale */}
-        <div className="bg-black/60 border border-gray-800 rounded-lg p-3">
-          <div className="text-gray-500 font-mono text-[10px] uppercase tracking-wider mb-2">Measurements</div>
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-400 text-xs">Total weight</span>
-              <span className="text-white font-mono text-xs font-bold">245.1g</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-400 text-xs">Leaf count</span>
-              <span className="text-white font-mono text-xs font-bold">29</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-400 text-xs">Shoot weight</span>
-              <span className="text-white font-mono text-xs font-bold">196.3g</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-400 text-xs">Survived</span>
-              <span className="text-emerald-400 font-mono text-xs font-bold">Yes</span>
-            </div>
+        {/* Before harvest: Action Log */}
+        {!harvestResult && (
+          <div className="bg-black/60 border border-gray-800 rounded-lg p-3 flex-1 min-h-[200px]">
+            <div className="text-gray-500 font-mono text-[10px] uppercase tracking-wider mb-2">Action Log</div>
+            {actionLog.length === 0 ? (
+              <div className="text-gray-600 text-[10px] italic">No interventions yet...</div>
+            ) : (
+              <div className="space-y-1.5 overflow-hidden">
+                {actionLog.map((entry, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span className="text-gray-600 font-mono text-[10px] shrink-0">d{entry.day}</span>
+                    <span className="text-emerald-400/80 font-mono text-[10px]">{entry.action}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
-        {/* Reward Function — how we compute the score */}
-        <div className="bg-black/60 border border-emerald-500/20 rounded-lg p-3 flex-1">
-          <div className="text-gray-500 font-mono text-[10px] uppercase tracking-wider mb-2">Reward Function</div>
-          <div className="space-y-2 font-mono text-[11px]">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-400">harvest_weight / baseline</span>
-              <span className="text-emerald-400 font-bold">+1.06</span>
+        {/* After harvest: Measurements */}
+        {harvestResult && (
+          <>
+            <div className="bg-black/60 border border-gray-800 rounded-lg p-3">
+              <div className="text-gray-500 font-mono text-[10px] uppercase tracking-wider mb-2">Measurements</div>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400 text-xs">Total weight</span>
+                  <span className="text-white font-mono text-xs font-bold">{harvestResult.weight.toFixed(1)}g</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400 text-xs">Leaf count</span>
+                  <span className="text-white font-mono text-xs font-bold">{harvestResult.leafCount}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400 text-xs">Interventions</span>
+                  <span className="text-white font-mono text-xs font-bold">{actionLog.length}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400 text-xs">Survived</span>
+                  <span className={`font-mono text-xs font-bold ${harvestResult.survived ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {harvestResult.survived ? 'Yes' : 'No'}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-400">survival_bonus</span>
-              <span className="text-emerald-400 font-bold">+1.00</span>
+
+            {/* Reward Function */}
+            <div className="bg-black/60 border border-emerald-500/20 rounded-lg p-3 flex-1">
+              <div className="text-gray-500 font-mono text-[10px] uppercase tracking-wider mb-2">Reward Function</div>
+              <div className="space-y-2 font-mono text-[11px]">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">harvest_weight / baseline</span>
+                  <span className="text-emerald-400 font-bold">+{(harvestResult.weight / 200).toFixed(2)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">survival_bonus</span>
+                  <span className={`font-bold ${harvestResult.survived ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {harvestResult.survived ? '+1.00' : '+0.00'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">resource_penalty</span>
+                  <span className="text-red-400/70">-{(actionLog.length * 0.02 + 0.05).toFixed(2)}</span>
+                </div>
+                <div className="mt-2 pt-2 border-t border-emerald-500/20 flex items-center justify-between">
+                  <span className="text-white text-xs font-bold">Total Reward</span>
+                  <span className="text-emerald-400 text-sm font-black">+{harvestResult.reward.toFixed(2)}</span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-400">resource_penalty</span>
-              <span className="text-red-400/70">-0.18</span>
-            </div>
-            <div className="mt-2 pt-2 border-t border-emerald-500/20 flex items-center justify-between">
-              <span className="text-white text-xs font-bold">Total Reward</span>
-              <span className="text-emerald-400 text-sm font-black">+1.88</span>
-            </div>
-          </div>
-        </div>
+          </>
+        )}
 
         {/* Why this works for RL */}
         <div className="bg-gray-900/40 border border-gray-800/50 rounded-lg p-3">

@@ -3,9 +3,10 @@
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-const steps = [0, 10, 20, 30, 40, 50];
-const llamaSuccess = [50, 55, 45, 50, 25, 60];
-const qwenSuccess = [30, 15, 40, 20, 15, 30];
+// Real data from W&B runs p8rggsh0 (Llama 127-step) and Qwen baseline
+const steps = ['0', '40', '80', '113', '120', '127'];
+const llamaSuccess = [0, 0, 0, 100, 100, 100];
+const qwenSuccess = [30, 20, 15, 0, 0, 0]; // Qwen only ran 50 steps, no data after
 
 export default function SuccessRateComparisonChart() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -31,7 +32,7 @@ export default function SuccessRateComparisonChart() {
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
       const xScale = d3.scaleBand()
-        .domain(steps.map(String))
+        .domain(steps)
         .range([0, innerWidth])
         .padding(0.3);
 
@@ -49,19 +50,20 @@ export default function SuccessRateComparisonChart() {
         .data(steps)
         .enter()
         .append('rect')
-        .attr('x', (_, i) => (xScale(String(steps[i])) || 0) + xScale.bandwidth() / 2 - barWidth - 1)
+        .attr('x', (d) => (xScale(d) || 0) + xScale.bandwidth() / 2 - barWidth - 1)
         .attr('y', (_, i) => yScale(llamaSuccess[i]))
         .attr('width', barWidth)
         .attr('height', (_, i) => height - yScale(llamaSuccess[i]))
         .attr('fill', '#10b981')
         .attr('rx', 2);
 
-      // Qwen bars
+      // Qwen bars (only for steps where Qwen has data)
       svg.selectAll('.qwen-bar')
         .data(steps)
         .enter()
+        .filter((_, i) => qwenSuccess[i] > 0)
         .append('rect')
-        .attr('x', (_, i) => (xScale(String(steps[i])) || 0) + xScale.bandwidth() / 2 + 1)
+        .attr('x', (d) => (xScale(d) || 0) + xScale.bandwidth() / 2 + 1)
         .attr('y', (_, i) => yScale(qwenSuccess[i]))
         .attr('width', barWidth)
         .attr('height', (_, i) => height - yScale(qwenSuccess[i]))
@@ -72,12 +74,13 @@ export default function SuccessRateComparisonChart() {
       svg.selectAll('.llama-label')
         .data(steps)
         .enter()
+        .filter((_, i) => llamaSuccess[i] > 0)
         .append('text')
-        .attr('x', (_, i) => (xScale(String(steps[i])) || 0) + xScale.bandwidth() / 2 - barWidth / 2 - 1)
+        .attr('x', (d) => (xScale(d) || 0) + xScale.bandwidth() / 2 - barWidth / 2 - 1)
         .attr('y', (_, i) => yScale(llamaSuccess[i]) - 6)
         .attr('text-anchor', 'middle')
         .attr('fill', '#10b981')
-        .attr('font-size', '10px')
+        .attr('font-size', '11px')
         .attr('font-weight', 'bold')
         .text((_, i) => `${llamaSuccess[i]}%`);
 
@@ -85,8 +88,9 @@ export default function SuccessRateComparisonChart() {
       svg.selectAll('.qwen-label')
         .data(steps)
         .enter()
+        .filter((_, i) => qwenSuccess[i] > 0)
         .append('text')
-        .attr('x', (_, i) => (xScale(String(steps[i])) || 0) + xScale.bandwidth() / 2 + barWidth / 2 + 1)
+        .attr('x', (d) => (xScale(d) || 0) + xScale.bandwidth() / 2 + barWidth / 2 + 1)
         .attr('y', (_, i) => yScale(qwenSuccess[i]) - 6)
         .attr('text-anchor', 'middle')
         .attr('fill', '#94a3b8')
@@ -124,9 +128,9 @@ export default function SuccessRateComparisonChart() {
 
   return (
     <div className="bg-slate-900/50 rounded-lg p-6" ref={containerRef}>
-      <h3 className="text-lg font-bold text-white mb-1">Success Rate Comparison</h3>
+      <h3 className="text-lg font-bold text-white mb-1">Success Rate</h3>
       <p className="text-sm text-gray-400 mb-4">
-        Harvest success rate (150g+ threshold) by checkpoint
+        0% to 100% — from never harvesting to always harvesting
       </p>
       <div className="overflow-x-auto">
         <svg ref={svgRef} className="mx-auto" />

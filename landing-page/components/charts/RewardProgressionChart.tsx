@@ -3,13 +3,18 @@
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
+// Real data from W&B run p8rggsh0 (127-step) and xd72dxcd (50-step Qwen baseline)
 const llamaData = [
-  { step: 0, reward: 0.482 },
-  { step: 10, reward: 0.477 },
-  { step: 20, reward: 0.446 },
-  { step: 30, reward: 0.491 },
-  { step: 40, reward: 0.293 },
-  { step: 50, reward: 0.522 },
+  { step: 0, reward: 0.140 },
+  { step: 20, reward: 0.138 },
+  { step: 40, reward: 0.137 },
+  { step: 60, reward: 0.141 },
+  { step: 80, reward: 0.139 },
+  { step: 100, reward: 0.138 },
+  { step: 113, reward: 0.786 },
+  { step: 118, reward: 0.819 },
+  { step: 122, reward: 0.878 },
+  { step: 127, reward: 0.839 },
 ];
 
 const qwenData = [
@@ -33,10 +38,10 @@ export default function RewardProgressionChart() {
       d3.select(svgRef.current).selectAll('*').remove();
 
       const containerWidth = containerRef.current.clientWidth;
-      const width = Math.min(containerWidth - 32, 800);
-      const margin = { top: 20, right: 160, bottom: 60, left: 60 };
+      const width = Math.min(containerWidth - 32, 500);
+      const margin = { top: 20, right: 20, bottom: 60, left: 60 };
       const innerWidth = width - margin.left - margin.right;
-      const height = 320 - margin.top - margin.bottom;
+      const height = 280 - margin.top - margin.bottom;
 
       const svg = d3.select(svgRef.current)
         .attr('width', width)
@@ -44,8 +49,8 @@ export default function RewardProgressionChart() {
         .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
-      const xScale = d3.scaleLinear().domain([0, 50]).range([0, innerWidth]);
-      const yScale = d3.scaleLinear().domain([0, 0.7]).range([height, 0]);
+      const xScale = d3.scaleLinear().domain([0, 130]).range([0, innerWidth]);
+      const yScale = d3.scaleLinear().domain([0, 1.0]).range([height, 0]);
 
       // Grid lines
       svg.append('g')
@@ -71,7 +76,7 @@ export default function RewardProgressionChart() {
         .append('circle')
         .attr('cx', d => xScale(d.step))
         .attr('cy', d => yScale(d.reward))
-        .attr('r', 5)
+        .attr('r', 4)
         .attr('fill', '#10b981')
         .attr('stroke', '#064e3b')
         .attr('stroke-width', 1.5);
@@ -96,7 +101,7 @@ export default function RewardProgressionChart() {
         .append('circle')
         .attr('cx', d => xScale(d.step))
         .attr('cy', d => yScale(d.reward))
-        .attr('r', 3.5)
+        .attr('r', 3)
         .attr('fill', '#64748b')
         .attr('stroke', '#334155')
         .attr('stroke-width', 1);
@@ -104,12 +109,12 @@ export default function RewardProgressionChart() {
       // Axes
       svg.append('g')
         .attr('transform', `translate(0,${height})`)
-        .call(d3.axisBottom(xScale).ticks(6).tickFormat(d => `${d}`))
+        .call(d3.axisBottom(xScale).tickValues([0, 20, 40, 60, 80, 100, 127]).tickFormat(d => `${d}`))
         .selectAll('text')
         .attr('fill', '#9ca3af');
 
       svg.append('g')
-        .call(d3.axisLeft(yScale).ticks(7).tickFormat(d => d3.format('.2f')(d as number)))
+        .call(d3.axisLeft(yScale).ticks(5).tickFormat(d => d3.format('.1f')(d as number)))
         .selectAll('text')
         .attr('fill', '#9ca3af');
 
@@ -131,39 +136,25 @@ export default function RewardProgressionChart() {
         .attr('font-size', '13px')
         .text('Reward');
 
-      // Legend
+      // Inline legend at top
       const legend = svg.append('g')
-        .attr('transform', `translate(${innerWidth + 16}, 20)`);
+        .attr('transform', `translate(${innerWidth - 140}, 0)`);
 
-      // Llama legend
       legend.append('line')
-        .attr('x1', 0).attr('y1', 0).attr('x2', 20).attr('y2', 0)
+        .attr('x1', 0).attr('y1', 0).attr('x2', 16).attr('y2', 0)
         .attr('stroke', '#10b981').attr('stroke-width', 2.5);
-      legend.append('circle')
-        .attr('cx', 10).attr('cy', 0).attr('r', 4)
-        .attr('fill', '#10b981');
       legend.append('text')
-        .attr('x', 28).attr('y', 4)
-        .attr('fill', '#d1d5db').attr('font-size', '12px')
-        .text('Llama 3.1 8B');
+        .attr('x', 20).attr('y', 4)
+        .attr('fill', '#d1d5db').attr('font-size', '11px')
+        .text('Llama 8B (4 att.)');
 
-      // Qwen legend
       legend.append('line')
-        .attr('x1', 0).attr('y1', 30).attr('x2', 20).attr('y2', 30)
+        .attr('x1', 0).attr('y1', 18).attr('x2', 16).attr('y2', 18)
         .attr('stroke', '#64748b').attr('stroke-width', 2).attr('stroke-dasharray', '6,4');
-      legend.append('circle')
-        .attr('cx', 10).attr('cy', 30).attr('r', 3)
-        .attr('fill', '#64748b');
       legend.append('text')
-        .attr('x', 28).attr('y', 34)
-        .attr('fill', '#9ca3af').attr('font-size', '12px')
-        .text('Qwen3 14B');
-
-      // Subtitle in legend
-      legend.append('text')
-        .attr('x', 0).attr('y', 60)
-        .attr('fill', '#6b7280').attr('font-size', '10px')
-        .text('(1 attempt, no GRPO)');
+        .attr('x', 20).attr('y', 22)
+        .attr('fill', '#9ca3af').attr('font-size', '11px')
+        .text('Qwen 14B (1 att.)');
     };
 
     drawChart();
@@ -174,22 +165,12 @@ export default function RewardProgressionChart() {
 
   return (
     <div className="bg-slate-900/50 rounded-lg p-6" ref={containerRef}>
-      <h3 className="text-xl font-bold text-white mb-2">Reward Progression</h3>
+      <h3 className="text-lg font-bold text-white mb-1">Reward Curve</h3>
       <p className="text-sm text-gray-400 mb-4">
-        Mean reward on 20 held-out evaluation seeds across training checkpoints
+        Reward jumps 6x once full 30-day episodes begin at step 113
       </p>
       <div className="overflow-x-auto">
         <svg ref={svgRef} className="mx-auto" />
-      </div>
-      <div className="mt-4 p-4 bg-slate-950/50 border border-slate-700 rounded-lg">
-        <p className="text-sm text-gray-300 leading-relaxed">
-          <span className="font-semibold text-emerald-400">Llama 3.1 8B</span> (4 attempts, GRPO) shows
-          steady improvement from 0.48 to 0.52 reward, while{' '}
-          <span className="text-slate-400">Qwen3 14B</span> (1 attempt) stays flat
-          or declines. Why? GRPO needs multiple attempts per prompt to compute advantages &mdash;
-          with only 1 attempt, std=0, so the model gets zero learning signal. The 8B model fits 4
-          attempts in GPU memory; the 14B model OOMs beyond 1.
-        </p>
       </div>
     </div>
   );

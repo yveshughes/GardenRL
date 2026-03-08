@@ -73,40 +73,47 @@ export default function WhyGardenRL() {
           })}
         </div>
 
-        {/* Bottom CTA */}
-        <div className="bg-gradient-to-r from-emerald-900/40 to-emerald-800/40 border border-emerald-500/30 text-white p-10 rounded-3xl backdrop-blur-sm fade-in-up delay-5">
-          <div className="max-w-3xl mx-auto space-y-6">
-            <h3 className="text-3xl font-bold gradient-green text-center">Built With Domain Expertise</h3>
-            <div className="grid md:grid-cols-2 gap-6 text-sm">
-              <div>
-                <div className="text-emerald-400 font-mono text-xs mb-2">Real-World Grounding</div>
-                <p className="text-gray-300">
-                  Every parameter reflects <strong>10+ years</strong> managing commercial NFT hydroponic systems.
-                  pH drift, nutrient lockout, temperature stress — all based on real cultivation experience.
-                </p>
+        {/* Dataset Growth Row */}
+        <div className="fade-in-up delay-5">
+          <div className="text-center mb-6">
+            <div className="text-emerald-500 font-mono text-xs mb-2">Training Data</div>
+            <h3 className="text-2xl font-bold text-white mb-2">
+              Watch it <span className="gradient-green">Grow</span>
+            </h3>
+            <p className="text-gray-500 text-sm">
+              Real Batavia lettuce from HydroGrowNet — daily captures across the full growth cycle
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 max-w-6xl mx-auto">
+            {[
+              Array.from({ length: 9 }, (_, i) => i + 1),
+              Array.from({ length: 9 }, (_, i) => i + 10),
+            ].map((row, ri) => (
+              <div key={ri} className="grid grid-cols-9 gap-2">
+                {row.map((day) => (
+                  <div key={day} className="group">
+                    <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-950 border border-gray-800/60 group-hover:border-emerald-500/40 transition-colors">
+                      <img
+                        src={`/plants/day-${day}.png`}
+                        alt={`Day ${day}`}
+                        className="w-full h-full object-contain"
+                        loading="lazy"
+                      />
+                      <div className="absolute top-1 left-1.5 text-[10px] font-mono font-bold text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                        Day {day}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div>
-                <div className="text-emerald-400 font-mono text-xs mb-2">Dataset Foundation</div>
-                <p className="text-gray-300">
-                  Grounded in the <strong>HydroGrowNet of Batavia dataset</strong> — 390,000+ images from
-                  controlled experiments tracking pH, EC, and temperature across 90-day growth cycles.
-                </p>
-              </div>
-              <div>
-                <div className="text-emerald-400 font-mono text-xs mb-2">Fast Simulation</div>
-                <p className="text-gray-300">
-                  Deterministic Python simulation (no image processing at runtime). Compatible with any RL
-                  framework — Unsloth, TRL, or custom training loops.
-                </p>
-              </div>
-              <div>
-                <div className="text-emerald-400 font-mono text-xs mb-2">Real Impact</div>
-                <p className="text-gray-300">
-                  Hydroponics uses <strong>90% less water</strong> than traditional farming. Teaching AI to optimize
-                  growing conditions could help scale sustainable food production globally.
-                </p>
-              </div>
-            </div>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-center gap-6 mt-4 text-xs text-gray-500 font-mono">
+            <span>Real plant images from HydroGrowNet dataset</span>
+            <span className="text-gray-700">|</span>
+            <span>YOLO-v8 segmented &middot; 640&times;480</span>
           </div>
         </div>
       </div>
